@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Tracking Truk Pupuk - PT Pupuk Sriwidjaja</title>
+<style>
+:root{
+  --bg:#f0f4f2; --card:#ffffff; --text:#1c2b23; --muted:#6b7d73;
+  --accent:#0a6e4d; --accent-dark:#074f38; --accent2:#e8f5ef; --border:#dde5e1; --warn:#c47f17; --danger:#b3261e; --danger2:#fdecea;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+button,input{font-family:inherit;font-size:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hidden{display:none !important}
+
+/* ---------- Login ---------- */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));}
+.login-box{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
+.login-box .logo-box{margin:0 auto 12px;border:1px solid var(--border);box-shadow:none;}
+.login-box h1{font-size:1.15rem;text-align:center;margin:0 0 4px;}
+.login-box .sub{font-size:.82rem;color:var(--muted);text-align:center;margin:0 0 18px;}
+.linkbtn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;text-decoration:underline;}
+
+/* ---------- Form ---------- */
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:4px;}
+.field input{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);}
+.field input:focus{border-color:var(--accent);}
+.hint{font-size:.75rem;color:var(--muted);margin:2px 0 0;}
+.err{color:var(--danger);font-size:.8rem;min-height:1.1em;margin:0 0 10px;}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;}
+.btn:hover{background:var(--accent-dark);}
+.btn:disabled{opacity:.6;cursor:wait;}
+.btn.full{width:100%;}
+.btn.ghost{background:var(--card);color:var(--accent);border-color:var(--border);}
+.btn.ghost:hover{background:var(--accent2);}
+
+/* ---------- Topbar ---------- */
+.topbar{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;padding:18px 16px;}
+.topbar-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.logo-box{width:52px;height:52px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.logo-box img{width:100%;height:100%;object-fit:contain;padding:4px;}
+.logo-box .fallback{font-weight:800;color:var(--accent);font-size:1.1rem;}
+.topbar h1{margin:0;font-size:1.2rem;}
+.topbar p{margin:3px 0 0;font-size:.82rem;opacity:.9;}
+#connStatus{display:inline-block;margin-top:8px;font-size:.72rem;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);}
+#connStatus.ok{background:#fff;color:var(--accent);}
+#userEmail{display:inline-block;margin:8px 0 0 6px;font-size:.72rem;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);}
+
+.wrap{max-width:960px;margin:0 auto;padding:0 12px 40px;}
+.toolbar{display:flex;gap:8px;justify-content:flex-end;margin:16px 0 -6px;flex-wrap:wrap;}
+.toolbar button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--accent);font-weight:600;font-size:.82rem;cursor:pointer;}
+.toolbar button:hover{background:var(--accent2);}
+.toolbar button.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.toolbar button.primary:hover{background:var(--accent-dark);}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.card .num{font-size:1.5rem;font-weight:700;color:var(--accent);}
+.card .lbl{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;}
+.panel h2{font-size:1rem;margin:0 0 10px;}
+.tablewrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:680px;}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
+th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;}
+.badge{padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:600;}
+.badge.progress{background:#fff3d9;color:var(--warn);}
+.badge.done{background:var(--accent2);color:var(--accent);}
+.empty{color:var(--muted);font-size:.85rem;padding:10px 0;}
+.aksi{white-space:nowrap;}
+.mini{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--accent);font-size:.75rem;font-weight:600;cursor:pointer;margin-right:4px;}
+.mini:hover{background:var(--accent2);}
+.mini.del{color:var(--danger);}
+.mini.del:hover{background:var(--danger2);}
+
+/* ---------- Modal & toast ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,30,23,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+.modal{background:#fff;border-radius:14px;padding:22px 20px;width:100%;max-width:400px;max-height:92vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+.modal h3{margin:0 0 14px;font-size:1.05rem;}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 16px;border-radius:8px;font-size:.85rem;z-index:60;max-width:90vw;}
+#toast.bad{background:var(--danger);}
+
+@media print{
+  .topbar{background:#fff !important;color:var(--text) !important;}
+  .toolbar, #connStatus, #userEmail, .aksi, .overlay, #toast{display:none !important;}
+  .card, .panel{border:1px solid #999;box-shadow:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen" class="hidden">
+  <form class="login-box" id="loginForm" autocomplete="on">
+    <div class="logo-box">
+      <img src="logo-pusri.png" alt="Logo PT Pupuk Sriwidjaja"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="fallback" style="display:none">PS</div>
+    </div>
+    <h1>Masuk ke Dashboard</h1>
+    <p class="sub">Tracking Truk Pupuk — PT Pupuk Sriwidjaja</p>
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input id="loginEmail" type="email" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="loginPass">Password</label>
+      <input id="loginPass" type="password" autocomplete="current-password" required>
+    </div>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn full" id="loginBtn" type="submit">Masuk</button>
+    <p style="text-align:center;margin:14px 0 0"><button type="button" class="linkbtn" id="resetBtn">Lupa password?</button></p>
+  </form>
+</div>
+
+<!-- ===================== APLIKASI ===================== -->
+<div id="app" class="hidden">
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">
+      <img src="logo-pusri.png" alt="Logo PT Pupuk Sriwidjaja"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="fallback" style="display:none">PS</div>
+    </div>
+    <div>
+      <h1>🚚 Dashboard Tracking Truk Pupuk</h1>
+      <p>PT Pupuk Sriwidjaja — Monitoring Muat &amp; Bongkar via RFID (live dari Firebase)</p>
+      <span id="connStatus">Menghubungkan ke Firebase...</span><span id="userEmail"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="toolbar">
+  <button class="primary" onclick="bukaFormTrip(null)">➕ Tambah Data Manual</button>
+  <button onclick="unduhCSV()">⬇️ Unduh CSV</button>
+  <button onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+  <button onclick="bukaGantiPw()">🔑 Ganti Password</button>
+  <button onclick="keluar()">🚪 Keluar</button>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="num" id="statTotal">0</div><div class="lbl">Total scan hari ini</div></div>
+  <div class="card"><div class="num" id="statTransit">0</div><div class="lbl">Truk dalam perjalanan</div></div>
+  <div class="card"><div class="num" id="statDone">0</div><div class="lbl">Selesai (muat &amp; bongkar)</div></div>
+  <div class="card"><div class="num" id="statAvg">-</div><div class="lbl">Rata-rata durasi</div></div>
+</div>
+
+<div class="panel">
+  <h2>Log Truk (real-time)</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>UID Truk</th><th>Status</th><th>Waktu Muat</th><th>Waktu Bongkar</th><th>Durasi</th><th class="aksi">Aksi</th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table>
+  </div>
+  <p class="empty" id="emptyMsg" style="display:none">Belum ada data scan masuk dari alat.</p>
+</div>
+</div>
+</div>
+
+<!-- ===================== MODAL: TAMBAH / EDIT ===================== -->
+<div id="tripModal" class="overlay hidden">
+  <form class="modal" id="tripForm" role="dialog" aria-modal="true" aria-labelledby="tripTitle">
+    <h3 id="tripTitle">Tambah data manual</h3>
+    <div class="field">
+      <label for="fUid">UID Truk</label>
+      <input id="fUid" type="text" required maxlength="40" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fMuat">Waktu muat</label>
+      <input id="fMuat" type="datetime-local">
+    </div>
+    <div class="field">
+      <label for="fBongkar">Waktu bongkar</label>
+      <input id="fBongkar" type="datetime-local">
+      <p class="hint">Isi salah satu atau keduanya. Kosongkan waktu bongkar jika truk masih dalam perjalanan.</p>
+    </div>
+    <p class="err" id="tripErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" data-close>Batal</button>
+      <button type="submit" class="btn" id="tripSave">Simpan</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===================== MODAL: GANTI PASSWORD ===================== -->
+<div id="pwModal" class="overlay hidden">
+  <form class="modal" id="pwForm" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <h3 id="pwTitle">Ganti password</h3>
+    <div class="field">
+      <label for="pwOld">Password saat ini</label>
+      <input id="pwOld" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="field">
+      <label for="pwNew">Password baru</label>
+      <input id="pwNew" type="password" autocomplete="new-password" minlength="6" required>
+      <p class="hint">Minimal 6 karakter.</p>
+    </div>
+    <div class="field">
+      <label for="pwNew2">Ulangi password baru</label>
+      <input id="pwNew2" type="password" autocomplete="new-password" minlength="6" required>
+    </div>
+    <p class="err" id="pwErr" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn ghost" data-close>Batal</button>
+      <button type="submit" class="btn" id="pwSave">Simpan password</button>
+    </div>
+  </form>
+</div>
+
+<div id="toast" class="hidden" role="status"></div>
+
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBmJP2DlCNujG-qGFN7MiJ3P4cfo5f-faQ",
+  authDomain: "tracking-truk-pusri.firebaseapp.com",
+  databaseURL: "https://tracking-truk-pusri-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tracking-truk-pusri",
+  storageBucket: "tracking-truk-pusri.firebasestorage.app",
+  messagingSenderId: "516753467551",
+  appId: "1:516753467551:web:bf83323169dddbb0435aaa"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const scansRef = db.ref("scans");
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, bad){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = bad ? 'bad' : '';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('hidden'), 3500);
+}
+
+/* ---------- Status koneksi ---------- */
+const statusEl = $('connStatus');
+db.ref(".info/connected").on("value", (snap) => {
+  if (snap.val() === true) {
+    statusEl.textContent = "Terhubung ke Firebase";
+    statusEl.classList.add('ok');
+  } else {
+    statusEl.textContent = "Menghubungkan ke Firebase...";
+    statusEl.classList.remove('ok');
+  }
+});
+
+/* ---------- Pesan error Auth ---------- */
+function pesanAuth(e){
+  switch (e.code) {
+    case 'auth/invalid-email': return 'Format email tidak valid.';
+    case 'auth/user-disabled': return 'Akun ini dinonaktifkan.';
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential': return 'Email atau password salah.';
+    case 'auth/too-many-requests': return 'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';
+    case 'auth/network-request-failed': return 'Tidak ada koneksi internet.';
+    case 'auth/weak-password': return 'Password baru terlalu lemah (minimal 6 karakter).';
+    case 'auth/requires-recent-login': return 'Sesi sudah lama. Keluar lalu masuk lagi, kemudian ulangi.';
+    default: return 'Terjadi kesalahan: ' + (e.message || e.code);
+  }
+}
+
+/* ---------- Login / logout ---------- */
+$('loginForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  $('loginErr').textContent = '';
+  $('loginBtn').disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword($('loginEmail').value.trim(), $('loginPass').value);
+    $('loginPass').value = '';
+  } catch (e) {
+    $('loginErr').textContent = pesanAuth(e);
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+});
+
+$('resetBtn').addEventListener('click', async () => {
+  const email = $('loginEmail').value.trim();
+  if (!email) { $('loginErr').textContent = 'Isi email dulu, lalu klik "Lupa password?".'; return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    $('loginErr').textContent = '';
+    toast('Tautan reset password dikirim ke ' + email);
+  } catch (e) {
+    $('loginErr').textContent = pesanAuth(e);
+  }
+});
+
+function keluar(){ auth.signOut(); }
+
+/* ---------- Status login menentukan tampilan ---------- */
+let listening = false;
+function onScans(snapshot){
+  const val = snapshot.val() || {};
+  const rawScans = Object.entries(val)
+    .filter(([, v]) => v && typeof v === 'object')
+    .map(([key, v]) => ({ ...v, key }));
+  render(buildTrips(rawScans));
+}
+function onScansError(err){
+  toast('Gagal membaca data: ' + err.message, true);
+}
+
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    $('loginScreen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('userEmail').textContent = user.email;
+    if (!listening) { scansRef.on("value", onScans, onScansError); listening = true; }
+  } else {
+    if (listening) { scansRef.off("value", onScans); listening = false; }
+    lastTrips = [];
+    $('logBody').innerHTML = '';
+    tutupModal();
+    $('app').classList.add('hidden');
+    $('loginScreen').classList.remove('hidden');
+  }
+});
+
+/* ---------- Format ---------- */
+function fmtTime(ts){
+  if(!ts) return '-';
+  return new Date(ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+}
+function durasi(a,b){
+  if(!a || !b) return '-';
+  const menit = Math.round((b-a)/60000);
+  const j = Math.floor(menit/60), m = menit%60;
+  return j>0 ? `${j}j ${m}m` : `${m}m`;
+}
+function toLocalInput(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  return new Date(ts - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+
+/* ---------- Pasangkan scan muat -> bongkar (menyimpan key Firebase) ---------- */
+function buildTrips(rawScans){
+  const byUid = {};
+  rawScans.forEach(s => {
+    if (!byUid[s.uid]) byUid[s.uid] = [];
+    byUid[s.uid].push(s);
+  });
+  const trips = [];
+  Object.entries(byUid).forEach(([uid, list]) => {
+    list.sort((a,b) => a.timestamp - b.timestamp);
+    let open = null;
+    list.forEach(s => {
+      if (s.stasiun === 'muat') {
+        if (open) trips.push(open);
+        open = { uid, muat: s.timestamp, bongkar: null, muatKey: s.key, bongkarKey: null };
+      } else if (s.stasiun === 'bongkar') {
+        if (open) { open.bongkar = s.timestamp; open.bongkarKey = s.key; trips.push(open); open = null; }
+        else trips.push({ uid, muat: null, bongkar: s.timestamp, muatKey: null, bongkarKey: s.key });
+      }
+    });
+    if (open) trips.push(open);
+  });
+  trips.sort((a,b) => (b.muat||b.bongkar) - (a.muat||a.bongkar));
+  return trips;
+}
+
+let lastTrips = [];
+
+function render(trips){
+  lastTrips = trips;
+  const body = $('logBody');
+  const emptyMsg = $('emptyMsg');
+  body.innerHTML = '';
+  emptyMsg.style.display = trips.length ? 'none' : 'block';
+
+  let transit=0, done=0, durasiTotal=0, durasiCount=0;
+  trips.forEach((t, i) => {
+    const status = t.bongkar ? 'Selesai' : 'Dalam Perjalanan';
+    if (t.bongkar) done++; else transit++;
+    if (t.muat && t.bongkar) { durasiTotal += (t.bongkar - t.muat); durasiCount++; }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(t.uid)}</td>
+      <td><span class="badge ${t.bongkar?'done':'progress'}">${status}</span></td>
+      <td>${fmtTime(t.muat)}</td>
+      <td>${fmtTime(t.bongkar)}</td>
+      <td>${durasi(t.muat, t.bongkar)}</td>
+      <td class="aksi">
+        <button class="mini" data-edit="${i}">Edit</button>
+        <button class="mini del" data-del="${i}">Hapus</button>
+      </td>`;
+    body.appendChild(tr);
+  });
+
+  $('statTotal').textContent = trips.length;
+  $('statTransit').textContent = transit;
+  $('statDone').textContent = done;
+  $('statAvg').textContent = durasiCount
+    ? Math.round(durasiTotal/durasiCount/60000)+'m' : '-';
+}
+
+$('logBody').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button');
+  if (!b) return;
+  if (b.dataset.edit !== undefined) bukaFormTrip(lastTrips[+b.dataset.edit]);
+  if (b.dataset.del !== undefined) hapusTrip(lastTrips[+b.dataset.del]);
+});
+
+/* ---------- Modal ---------- */
+function tutupModal(){
+  $('tripModal').classList.add('hidden');
+  $('pwModal').classList.add('hidden');
+}
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', tutupModal));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('mousedown', (ev) => { if (ev.target === o) tutupModal(); }));
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') tutupModal(); });
+
+/* ---------- Tambah / edit data ---------- */
+let editing = null;
+function bukaFormTrip(trip){
+  editing = trip;
+  $('tripTitle').textContent = trip ? 'Edit data truk' : 'Tambah data manual';
+  $('fUid').value = trip ? trip.uid : '';
+  $('fMuat').value = trip ? toLocalInput(trip.muat) : '';
+  $('fBongkar').value = trip ? toLocalInput(trip.bongkar) : '';
+  $('tripErr').textContent = '';
+  $('tripModal').classList.remove('hidden');
+  $('fUid').focus();
+}
+
+$('tripForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const uid = $('fUid').value.trim();
+  const muatV = $('fMuat').value;
+  const bongkarV = $('fBongkar').value;
+  const err = $('tripErr');
+
+  if (!uid) { err.textContent = 'UID truk wajib diisi.'; return; }
+  if (!muatV && !bongkarV) { err.textContent = 'Isi minimal satu waktu (muat atau bongkar).'; return; }
+  if (muatV && bongkarV && new Date(bongkarV) < new Date(muatV)) {
+    err.textContent = 'Waktu bongkar tidak boleh lebih awal dari waktu muat.'; return;
+  }
+
+  const ups = {};
+  const terapkan = (stasiun, key, val) => {
+    if (val) {
+      const ts = new Date(val).getTime();
+      if (key) { ups[key + '/uid'] = uid; ups[key + '/timestamp'] = ts; }
+      else { ups[scansRef.push().key] = { uid, stasiun, timestamp: ts, manual: true }; }
+    } else if (key) {
+      ups[key] = null;
+    }
+  };
+  terapkan('muat', editing && editing.muatKey, muatV);
+  terapkan('bongkar', editing && editing.bongkarKey, bongkarV);
+
+  $('tripSave').disabled = true;
+  try {
+    await scansRef.update(ups);
+    tutupModal();
+    toast(editing ? 'Perubahan disimpan.' : 'Data ditambahkan.');
+  } catch (e) {
+    err.textContent = 'Gagal menyimpan: ' + e.message;
+  } finally {
+    $('tripSave').disabled = false;
+  }
+});
+
+/* ---------- Hapus ---------- */
+async function hapusTrip(t){
+  if (!t) return;
+  if (!confirm(`Hapus data truk ${t.uid}? Tindakan ini tidak bisa dibatalkan.`)) return;
+  const ups = {};
+  if (t.muatKey) ups[t.muatKey] = null;
+  if (t.bongkarKey) ups[t.bongkarKey] = null;
+  try {
+    await scansRef.update(ups);
+    toast('Data dihapus.');
+  } catch (e) {
+    toast('Gagal menghapus: ' + e.message, true);
+  }
+}
+
+/* ---------- Ganti password ---------- */
+function bukaGantiPw(){
+  $('pwForm').reset();
+  $('pwErr').textContent = '';
+  $('pwModal').classList.remove('hidden');
+  $('pwOld').focus();
+}
+
+$('pwForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const err = $('pwErr');
+  const oldPw = $('pwOld').value, newPw = $('pwNew').value, newPw2 = $('pwNew2').value;
+  const user = auth.currentUser;
+  if (!user) return;
+  if (newPw.length < 6) { err.textContent = 'Password baru minimal 6 karakter.'; return; }
+  if (newPw !== newPw2) { err.textContent = 'Konfirmasi password baru tidak sama.'; return; }
+  if (newPw === oldPw) { err.textContent = 'Password baru harus berbeda dari yang lama.'; return; }
+
+  $('pwSave').disabled = true;
+  try {
+    const cred = firebase.auth.EmailAuthProvider.credential(user.email, oldPw);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPw);
+    tutupModal();
+    toast('Password berhasil diganti.');
+  } catch (e) {
+    err.textContent = (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
+      ? 'Password saat ini salah.' : pesanAuth(e);
+  } finally {
+    $('pwSave').disabled = false;
+  }
+});
+
+/* ---------- Unduh CSV ---------- */
+function unduhCSV(){
+  const header = ['UID Truk','Status','Waktu Muat','Waktu Bongkar','Durasi'];
+  const rows = lastTrips.map(t => [
+    t.uid,
+    t.bongkar ? 'Selesai' : 'Dalam Perjalanan',
+    t.muat ? new Date(t.muat).toLocaleString('id-ID') : '-',
+    t.bongkar ? new Date(t.bongkar).toLocaleString('id-ID') : '-',
+    durasi(t.muat, t.bongkar)
+  ]);
+  const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tracking-truk-pupuk-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
