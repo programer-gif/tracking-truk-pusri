@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Tracking Truk Pupuk - PT Pupuk Sriwidjaja</title>
+<style>
+:root{
+  --bg:#f0f4f2; --card:#ffffff; --text:#1c2b23; --muted:#6b7d73;
+  --accent:#0a6e4d; --accent-dark:#074f38; --accent2:#e8f5ef; --border:#dde5e1; --warn:#c47f17;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
+.topbar{background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;padding:18px 16px;}
+.topbar-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.logo-box{width:52px;height:52px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.logo-box img{width:100%;height:100%;object-fit:contain;padding:4px;}
+.logo-box .fallback{font-weight:800;color:var(--accent);font-size:1.1rem;}
+.topbar h1{margin:0;font-size:1.2rem;}
+.topbar p{margin:3px 0 0;font-size:.82rem;opacity:.9;}
+#connStatus{display:inline-block;margin-top:8px;font-size:.72rem;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.18);}
+#connStatus.ok{background:#fff;color:var(--accent);}
+.wrap{max-width:960px;margin:0 auto;padding:0 12px 40px;}
+.toolbar{display:flex;gap:8px;justify-content:flex-end;margin:16px 0 -6px;flex-wrap:wrap;}
+.toolbar button{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--accent);font-weight:600;font-size:.82rem;cursor:pointer;}
+.toolbar button:hover{background:var(--accent2);}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.card .num{font-size:1.5rem;font-weight:700;color:var(--accent);}
+.card .lbl{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:16px;}
+.panel h2{font-size:1rem;margin:0 0 10px;}
+.tablewrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:600px;}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);}
+th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;}
+.badge{padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:600;}
+.badge.progress{background:#fff3d9;color:var(--warn);}
+.badge.done{background:var(--accent2);color:var(--accent);}
+.empty{color:var(--muted);font-size:.85rem;padding:10px 0;}
+@media print{
+  .topbar{background:#fff !important;color:var(--text) !important;}
+  .toolbar, #connStatus{display:none !important;}
+  .card, .panel{border:1px solid #999;box-shadow:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo-box">
+      <img src="logo-pusri.png" alt="Logo PT Pupuk Sriwidjaja"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="fallback" style="display:none">PS</div>
+    </div>
+    <div>
+      <h1>🚚 Dashboard Tracking Truk Pupuk</h1>
+      <p>PT Pupuk Sriwidjaja — Monitoring Muat &amp; Bongkar via RFID (live dari Firebase)</p>
+      <span id="connStatus">Menghubungkan ke Firebase...</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="toolbar">
+  <button onclick="unduhCSV()">⬇️ Unduh CSV</button>
+  <button onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</div>
+
+
+<div class="cards">
+  <div class="card"><div class="num" id="statTotal">0</div><div class="lbl">Total scan hari ini</div></div>
+  <div class="card"><div class="num" id="statTransit">0</div><div class="lbl">Truk dalam perjalanan</div></div>
+  <div class="card"><div class="num" id="statDone">0</div><div class="lbl">Selesai (muat &amp; bongkar)</div></div>
+  <div class="card"><div class="num" id="statAvg">-</div><div class="lbl">Rata-rata durasi</div></div>
+</div>
+
+<div class="panel">
+  <h2>Log Truk (real-time)</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>UID Truk</th><th>Status</th><th>Waktu Muat</th><th>Waktu Bongkar</th><th>Durasi</th></tr></thead>
+      <tbody id="logBody"></tbody>
+    </table>
+  </div>
+  <p class="empty" id="emptyMsg" style="display:none">Belum ada data scan masuk dari alat.</p>
+</div>
+</div>
+
+<!-- Firebase SDK (compat, cukup 1 script) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script>
+// =====================================================================
+// GANTI dengan config Firebase project Anda sendiri
+// (Firebase Console > Project Settings > General > Your apps > SDK config)
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBmJP2DlCNujG-qGFN7MiJ3P4cfo5f-faQ",
+  authDomain: "tracking-truk-pusri.firebaseapp.com",
+  databaseURL: "https://tracking-truk-pusri-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tracking-truk-pusri",
+  storageBucket: "tracking-truk-pusri.firebasestorage.app",
+  messagingSenderId: "516753467551",
+  appId: "1:516753467551:web:bf83323169dddbb0435aaa"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const scansRef = db.ref("scans");
+
+const statusEl = document.getElementById('connStatus');
+db.ref(".info/connected").on("value", (snap) => {
+  if (snap.val() === true) {
+    statusEl.textContent = "Terhubung ke Firebase";
+    statusEl.classList.add('ok');
+  } else {
+    statusEl.textContent = "Menghubungkan ke Firebase...";
+    statusEl.classList.remove('ok');
+  }
+});
+
+function fmtTime(ts){
+  if(!ts) return '-';
+  return new Date(ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+}
+function durasi(a,b){
+  if(!a || !b) return '-';
+  const menit = Math.round((b-a)/60000);
+  const j = Math.floor(menit/60), m = menit%60;
+  return j>0 ? `${j}j ${m}m` : `${m}m`;
+}
+
+// Pasangkan scan muat -> bongkar per UID secara berurutan (mendukung
+// beberapa kali perjalanan untuk UID yang sama dalam satu hari)
+function buildTrips(rawScans){
+  const byUid = {};
+  rawScans.forEach(s => {
+    if (!byUid[s.uid]) byUid[s.uid] = [];
+    byUid[s.uid].push(s);
+  });
+  const trips = [];
+  Object.entries(byUid).forEach(([uid, list]) => {
+    list.sort((a,b) => a.timestamp - b.timestamp);
+    let open = null;
+    list.forEach(s => {
+      if (s.stasiun === 'muat') {
+        if (open) trips.push(open); // muat baru menutup trip lama yang belum bongkar
+        open = { uid, muat: s.timestamp, bongkar: null };
+      } else if (s.stasiun === 'bongkar') {
+        if (open) { open.bongkar = s.timestamp; trips.push(open); open = null; }
+        else trips.push({ uid, muat: null, bongkar: s.timestamp });
+      }
+    });
+    if (open) trips.push(open);
+  });
+  trips.sort((a,b) => (b.muat||b.bongkar) - (a.muat||a.bongkar));
+  return trips;
+}
+
+let lastTrips = [];
+
+function render(trips){
+  lastTrips = trips;
+  const body = document.getElementById('logBody');
+  const emptyMsg = document.getElementById('emptyMsg');
+  body.innerHTML = '';
+  emptyMsg.style.display = trips.length ? 'none' : 'block';
+
+  let transit=0, done=0, durasiTotal=0, durasiCount=0;
+  trips.forEach(t => {
+    const status = t.bongkar ? 'Selesai' : 'Dalam Perjalanan';
+    if (t.bongkar) done++; else transit++;
+    if (t.muat && t.bongkar) { durasiTotal += (t.bongkar - t.muat); durasiCount++; }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.uid}</td>
+      <td><span class="badge ${t.bongkar?'done':'progress'}">${status}</span></td>
+      <td>${fmtTime(t.muat)}</td>
+      <td>${fmtTime(t.bongkar)}</td>
+      <td>${durasi(t.muat, t.bongkar)}</td>`;
+    body.appendChild(tr);
+  });
+
+  document.getElementById('statTotal').textContent = trips.length;
+  document.getElementById('statTransit').textContent = transit;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statAvg').textContent = durasiCount
+    ? Math.round(durasiTotal/durasiCount/60000)+'m' : '-';
+}
+
+function unduhCSV(){
+  const header = ['UID Truk','Status','Waktu Muat','Waktu Bongkar','Durasi'];
+  const rows = lastTrips.map(t => [
+    t.uid,
+    t.bongkar ? 'Selesai' : 'Dalam Perjalanan',
+    t.muat ? new Date(t.muat).toLocaleString('id-ID') : '-',
+    t.bongkar ? new Date(t.bongkar).toLocaleString('id-ID') : '-',
+    durasi(t.muat, t.bongkar)
+  ]);
+  const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tracking-truk-pupuk-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+scansRef.on("value", (snapshot) => {
+  const val = snapshot.val() || {};
+  const rawScans = Object.values(val);
+  render(buildTrips(rawScans));
+});
+</script>
+</body>
+</html>
